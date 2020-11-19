@@ -77,7 +77,7 @@ public class Application implements ApplicationRunner {
 
         int position = Security.addProvider(new BouncyCastleProvider());
         log.debug("Provider position is: "+position);
-//        scheduler.startFollowerHeartBeatTimeoutTimer();
+        scheduler.startFollowerHeartBeatTimeoutTimer();
 
     }
 }
