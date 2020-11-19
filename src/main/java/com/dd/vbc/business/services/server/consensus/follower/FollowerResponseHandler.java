@@ -38,8 +38,8 @@ public class FollowerResponseHandler {
 
     /**
      *
-     * @param serverRequest
-     * @return
+     * @param serverRequest - HeartBeatRequest
+     * @return - HeartBeatResponse
      */
     public Mono<ServerResponse> heartbeatFollowerResponse(ServerRequest serverRequest) {
 
