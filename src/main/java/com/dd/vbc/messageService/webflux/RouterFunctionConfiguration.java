@@ -34,9 +34,9 @@ public class RouterFunctionConfiguration {
     @Bean
     public RouterFunction<ServerResponse> followerHeartbeat(FollowerResponseHandler followerResponseHandler) {
         if(log.isDebugEnabled())
-            log.debug("entering followerHeartbeat");
+            log.debug("entering followerHeartbeat()");
 
-        return route(RequestPredicates.POST("/consensus/heartbeat").
+        return route(RequestPredicates.POST("/consensus/follower/heartbeat").
                 and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
                 followerResponseHandler::heartbeatFollowerResponse);
     }
@@ -46,7 +46,7 @@ public class RouterFunctionConfiguration {
         if(log.isDebugEnabled())
             log.debug("entering followerLogEntry()");
 
-        return route(RequestPredicates.POST("/consensus/logEntry").
+        return route(RequestPredicates.POST("/consensus/follower/logEntry").
                 and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
                 followerResponseHandler::logEntryFollowerResponse);
     }
@@ -56,7 +56,7 @@ public class RouterFunctionConfiguration {
         if(log.isDebugEnabled())
             log.debug("entering followerCommitEntry()");
 
-        return route(RequestPredicates.POST("/consensus/commitEntry").
+        return route(RequestPredicates.POST("/consensus/follower/commitEntry").
                 and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
                 followerResponseHandler::commitEntryFollowerResponse);
     }

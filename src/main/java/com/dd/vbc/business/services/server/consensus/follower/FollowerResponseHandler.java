@@ -40,6 +40,8 @@ public class FollowerResponseHandler {
      */
     public Mono<ServerResponse> heartbeatFollowerResponse(ServerRequest serverRequest) {
 
+        log.debug("Entering heartbeatFollowerResponse()");
+
         return ServerResponse.
                 ok().
                 contentType(MediaType.APPLICATION_JSON).
@@ -47,7 +49,8 @@ public class FollowerResponseHandler {
                                 flatMap(hr -> consensusService.followerHeartbeatResponse(hr.getAppendEntry())).
                                 flatMap(ae -> Mono.just(new HeartBeatResponse(ae))).
                                 doOnSuccess(ae -> { if(log.isDebugEnabled()) log.debug("heartbeatFollowerResponse: "+ae.toString());}),
-                                                        HeartBeatResponse.class));
+                                                        HeartBeatResponse.class)).
+                                doOnError(em -> log.error("Error: "+em.getLocalizedMessage()));
     }
 
     /**
