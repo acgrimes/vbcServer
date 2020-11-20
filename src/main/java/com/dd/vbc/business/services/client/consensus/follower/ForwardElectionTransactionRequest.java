@@ -6,10 +6,13 @@ import com.dd.vbc.domain.ConsensusState;
 import com.dd.vbc.domain.Server;
 import com.dd.vbc.messageService.request.ElectionRequest;
 import com.dd.vbc.messageService.response.GeneralResponse;
+import com.dd.vbc.messageService.webflux.WebClientConfiguration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.context.ApplicationListener;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.client.HttpClient;
@@ -22,32 +25,25 @@ import java.util.logging.Logger;
 public class ForwardElectionTransactionRequest implements ApplicationListener<ForwardElectionTransactionEvent> {
 
     private static final Logger log = Logger.getLogger(ForwardElectionTransactionRequest.class.getSimpleName());
+    private final WebClient webClient = WebClientConfiguration.getWebClient();
 
     @Override
     public void onApplicationEvent(ForwardElectionTransactionEvent forwardElectionTransactionEvent) {
 
-        Consumer<byte[]> onSuccess = (byte[] bytes) ->  {
-            GeneralResponse response = SerializationUtils.deserialize(bytes);
-            log.info("Response in onSuccess: "+response);
-
+        Consumer<GeneralResponse> onSuccess = (GeneralResponse response) -> {
+            log.info("Response in onSuccess: " + response);
         };
         Consumer<Throwable> onError = Throwable::getMessage;
         Runnable onCompletion = () -> System.out.println("Forwarding ElectionTransaction Message Completed");
 
-        byte[] requestBytes = SerializationUtils.serialize((ElectionRequest) forwardElectionTransactionEvent.getSource());
-        ByteBuf requestByteBuf = Unpooled.copiedBuffer(requestBytes);
+        ElectionRequest electionRequest = (ElectionRequest) forwardElectionTransactionEvent.getSource();
 
-        HttpClient.create()
-                .tcpConfiguration(tcpClient -> tcpClient.host("localhost"))
-                .port(61005)
-                .protocol(HttpProtocol.HTTP11)
-                .post()
-                .uri("/election/transaction")
-                .send(Mono.just(requestByteBuf))
-                .responseContent()
-                .aggregate()
-                .asByteArray()
-                .subscribe(onSuccess, onError, onCompletion);
+        webClient.
+            post().
+            uri("/election/transaction").
+            bodyValue(electionRequest).
+            accept(MediaType.APPLICATION_JSON).
+            exchangeToMono(response -> response.bodyToMono(GeneralResponse.class)).
+            subscribe(onSuccess, onError, onCompletion);
     }
-
 }

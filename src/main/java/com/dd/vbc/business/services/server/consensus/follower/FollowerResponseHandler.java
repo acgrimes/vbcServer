@@ -10,9 +10,6 @@ import com.dd.vbc.messageService.request.LeaderVoteRequest;
 import com.dd.vbc.messageService.response.ConsensusResponse;
 import com.dd.vbc.messageService.response.HeartBeatResponse;
 import com.dd.vbc.messageService.response.LeaderVoteResponse;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +94,7 @@ public class FollowerResponseHandler {
                 body(BodyInserters.fromProducer(serverRequest.bodyToMono(LeaderVoteRequest.class).
                                 flatMap(req -> consensusService.candidateVoteRequest(req.getRequestLeaderVote()).
                                 flatMap(rlv -> Mono.just(new LeaderVoteResponse(ReturnCode.SUCCESS, rlv))).
-                                doOnSuccess(res -> {if(log.isDebugEnabled()) log.debug("commitEntryFollowerResponse(): "+res.toString());})),
+                                doOnSuccess(res -> {if(log.isDebugEnabled()) log.debug("candidateVoteRequestResponse(): "+res.toString());})),
                                     LeaderVoteResponse.class));
 
 
