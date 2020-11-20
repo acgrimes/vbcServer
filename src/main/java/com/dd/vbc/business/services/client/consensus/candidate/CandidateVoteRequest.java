@@ -13,6 +13,8 @@ import com.dd.vbc.messageService.webflux.WebClientConfiguration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.SerializationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -21,12 +23,12 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.function.Consumer;
-import java.util.logging.Logger;
+
 
 @Component
 public class CandidateVoteRequest {
 
-    private static final Logger log = Logger.getLogger(CandidateVoteRequest.class.getSimpleName());
+    private static final Logger log = LoggerFactory.getLogger(CandidateVoteRequest.class.getSimpleName());
 
     private WebClient webClient;
     @Autowired
@@ -57,8 +59,7 @@ public class CandidateVoteRequest {
         };
         Consumer<Throwable> onError = Throwable::getMessage;
 
-        Runnable onCompletion = () -> {
-            System.out.println("Message Completed");
+        Runnable onCompletion = () -> { log.debug("Message Complete");
 
         };
 

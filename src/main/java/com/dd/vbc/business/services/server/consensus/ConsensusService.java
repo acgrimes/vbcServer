@@ -69,7 +69,7 @@ public class ConsensusService {
     public Mono<RequestLeaderVote> candidateVoteRequest(RequestLeaderVote requestLeaderVote) {
 
         boolean approveElection = false;
-        if(ConsensusServer.getState()==ServerConsensusState.Follower) {
+        if(ConsensusServer.getState()==ServerConsensusState.Follower || ConsensusServer.getState()==ServerConsensusState.Candidate) {
             approveElection = true;
             scheduler.cancelFollowerHeartBeatTimeoutTimer();
         }
