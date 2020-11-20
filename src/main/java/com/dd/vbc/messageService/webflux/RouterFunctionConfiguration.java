@@ -72,10 +72,14 @@ public class RouterFunctionConfiguration {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> greeting(GreetingHandler greetingHandler) {
+    public RouterFunction<ServerResponse> followerLeaderCandidate(FollowerResponseHandler followerResponseHandler) {
 
-        return RouterFunctions
-                .route(RequestPredicates.POST("/hello").and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), greetingHandler::hello);
+        if(log.isDebugEnabled())
+            log.debug("entering followerCommitEntry()");
+
+        return route(RequestPredicates.POST("/consensus/follower/candidateVoteRequest").
+                        and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                followerResponseHandler::candidateVoteRequestResponse);
     }
 
 }

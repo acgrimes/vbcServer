@@ -87,29 +87,19 @@ public class FollowerResponseHandler {
                                     ConsensusResponse.class));
     }
 
-    public Mono<ByteBuf> candidateVoteRequestResponse(ByteBuf byteBuf) {
+    public Mono<ServerResponse> candidateVoteRequestResponse(ServerRequest serverRequest) {
 
-        byte[] bytes = null;
-        LeaderVoteRequest leaderVoteRequest = null;
-        try {
-            if (byteBuf.hasArray()) {
-                bytes = byteBuf.array();
-            } else {
-                bytes = new byte[byteBuf.readableBytes()];
-                byteBuf.duplicate().readBytes(bytes);
-            }
-            leaderVoteRequest = SerializationUtils.deserialize(bytes);
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            byteBuf.release();
-        }
-        log.info("class - FollowerResponseHandler, method - candidateVoteRequestResponse");
-        return consensusService.candidateVoteRequest(leaderVoteRequest.getRequestLeaderVote()).
-            flatMap(rlv -> {
-                LeaderVoteResponse response = new LeaderVoteResponse(ReturnCode.SUCCESS, rlv);
-                return Mono.just(Unpooled.copiedBuffer(SerializationUtils.serialize(response)));
-            }).
-            doOnSuccess(System.out::println);
+        log.info("candidateVoteRequestResponse()");
+
+        return ServerResponse.
+                ok().
+                contentType(MediaType.APPLICATION_JSON).
+                body(BodyInserters.fromProducer(serverRequest.bodyToMono(LeaderVoteRequest.class).
+                                flatMap(req -> consensusService.candidateVoteRequest(req.getRequestLeaderVote()).
+                                flatMap(rlv -> Mono.just(new LeaderVoteResponse(ReturnCode.SUCCESS, rlv))).
+                                doOnSuccess(res -> {if(log.isDebugEnabled()) log.debug("commitEntryFollowerResponse(): "+res.toString());})),
+                                    LeaderVoteResponse.class));
+
+
     }
 }

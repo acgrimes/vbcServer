@@ -7,14 +7,18 @@ import com.dd.vbc.domain.Server;
 import com.dd.vbc.enums.Request;
 import com.dd.vbc.messageService.request.ElectionRequest;
 import com.dd.vbc.messageService.request.HeartBeatRequest;
+import com.dd.vbc.messageService.response.ConsensusResponse;
 import com.dd.vbc.messageService.response.GeneralResponse;
 import com.dd.vbc.messageService.response.HeartBeatResponse;
+import com.dd.vbc.messageService.webflux.WebClientConfiguration;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.client.HttpClient;
@@ -26,39 +30,30 @@ import java.util.function.Consumer;
 public class LeaderHeartbeatRequest {
 
     private static final Logger log = LoggerFactory.getLogger(LeaderHeartbeatRequest.class);
+    private final WebClient webClient = WebClientConfiguration.getWebClient();
 
     public void heartbeatRequest(HeartBeatRequest heartBeatRequest) {
 
-        Consumer<byte[]> onSuccess = (byte[] response) -> {
-            HeartBeatResponse heartBeatResponse = SerializationUtils.deserialize(response);
-            log.debug("heartbeat response follower in onSuccess: "+heartBeatResponse.toString());
-
+        Consumer<HeartBeatResponse> onSuccess = (HeartBeatResponse response) -> {
+            log.debug("heartbeat response follower in onSuccess: "+response.toString());
         };
         Consumer<Throwable> onError = Throwable::getMessage;
 
         Runnable onCompletion = () -> log.debug("heartbeat message response from follower complete");
 
-        byte[] requestBytes = SerializationUtils.serialize(heartBeatRequest);
-
-        ConsensusState.getServerList().stream().forEach(
-            server -> {
-                if(!ConsensusServer.getId().equals(server.getId())) {
-                    log.info("Sending Leader HeartBeat to follower: "+server.getId());
-                    ByteBuf requestByteBuf = Unpooled.wrappedBuffer(requestBytes);
-                    HttpClient.create()
-                              .tcpConfiguration(tcpClient -> tcpClient.host(server.getHost()))
-                              .port(server.getReactivePort())
-                              .protocol(HttpProtocol.HTTP11)
-                              .post()
-                              .uri("/consensus/follower/heartbeat")
-                              .send(Mono.just(requestByteBuf))
-                              .responseContent()
-                              .aggregate()
-                              .asByteArray()
-                              .subscribe(onSuccess, onError, onCompletion);
-                }
+        ConsensusState.getServerList().stream().forEach(server -> {
+            if (!ConsensusServer.getId().equals(server.getId())) {
+                log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+heartBeatRequest.getAppendEntry().getIndex());
+                webClient.
+                        post().
+                        uri("/consensus/follower/heartbeat").
+                        bodyValue(heartBeatRequest).
+                        accept(MediaType.APPLICATION_JSON).
+                        exchangeToMono(response -> response.bodyToMono(HeartBeatResponse.class)).
+                        subscribe(onSuccess, onError, onCompletion);
             }
-        );
+        });
+
     }
 
     private HeartBeatRequest buildLeaderHeartbeatRequest() {

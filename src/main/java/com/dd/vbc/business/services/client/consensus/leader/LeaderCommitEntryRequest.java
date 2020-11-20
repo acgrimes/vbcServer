@@ -7,17 +7,14 @@ import com.dd.vbc.domain.ConsensusServer;
 import com.dd.vbc.domain.ConsensusState;
 import com.dd.vbc.messageService.request.ConsensusRequest;
 import com.dd.vbc.messageService.response.ConsensusResponse;
+import com.dd.vbc.messageService.webflux.WebClientConfiguration;
 import com.dd.vbc.utils.ByteArrayUtils;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.HttpProtocol;
-import reactor.netty.http.client.HttpClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +25,14 @@ import java.util.function.Consumer;
 public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntryEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(LeaderCommitEntryRequest.class);
+    private final WebClient webClient = WebClientConfiguration.getWebClient();
 
     @Override
     public void onApplicationEvent(CommitEntryEvent commitEntryRequest) {
 
-        Consumer<byte[]> onSuccess = (byte[] bytes) ->  {
-            ConsensusResponse<AppendEntry> consensusResponse = SerializationUtils.deserialize(bytes);
-            AppendEntry entry = consensusResponse.getResponse();
+        Consumer<ConsensusResponse> onSuccess = (ConsensusResponse response) ->  {
+
+            AppendEntry entry = (AppendEntry) response.getResponse();
             log.info("onSuccess - Received logCommit Message from Follower: "+entry.getIndex());
 
             if(entry.getCommitted()) {
@@ -61,23 +59,17 @@ public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntry
                                             log.debug("LeaderCommitEntryRequest onApplicationEvent Message Completed");};
 
         ConsensusRequest consensusRequest = new ConsensusRequest((AppendEntry) commitEntryRequest.getSource());
-        byte[] requestBytes = SerializationUtils.serialize(consensusRequest);
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
                 log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+consensusRequest.getAppendEntry().getIndex());
-                ByteBuf requestByteBuf = Unpooled.wrappedBuffer(requestBytes);
-                HttpClient.create()
-                        .tcpConfiguration(tcpClient -> tcpClient.host(server.getHost()))
-                        .port(server.getReactivePort())
-                        .protocol(HttpProtocol.HTTP11)
-                        .post()
-                        .uri("/consensus/follower/commitEntry")
-                        .send(Mono.just(requestByteBuf))
-                        .responseContent()
-                        .aggregate()
-                        .asByteArray()
-                        .subscribe(onSuccess, onError, onCompletion);
+                webClient.
+                    post().
+                    uri("/consensus/follower/commitEntry").
+                    bodyValue(consensusRequest).
+                    accept(MediaType.APPLICATION_JSON).
+                    exchangeToMono(response -> response.bodyToMono(ConsensusResponse.class)).
+                    subscribe(onSuccess, onError, onCompletion);
             }
         });
     }
