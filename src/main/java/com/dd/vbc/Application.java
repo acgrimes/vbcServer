@@ -40,7 +40,9 @@ public class Application implements ApplicationRunner {
 
     public static void main(String[] args) throws Exception {
 
-        ConsensusServer.setId(args[0]);
+        if(args.length!=0) {
+            ConsensusServer.setId(args[0]);
+        }
         SpringApplication.run(Application.class, args);
 
     }
