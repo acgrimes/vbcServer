@@ -67,10 +67,10 @@ public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntry
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
-                log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+consensusRequest.getAppendEntry().getIndex());
+                log.info("sending commit message - onApplicationEvent, server reactivePort: " + server.getReactivePort()+", index: "+consensusRequest.getAppendEntry().getIndex());
                 webClient.
                     post().
-                    uri("/consensus/follower/commitEntry").
+                    uri(server.getReactivePort()+"/consensus/follower/commitEntry").
                     bodyValue(consensusRequest).
                     accept(MediaType.APPLICATION_JSON).
                     exchangeToMono(response -> response.bodyToMono(ConsensusResponse.class)).

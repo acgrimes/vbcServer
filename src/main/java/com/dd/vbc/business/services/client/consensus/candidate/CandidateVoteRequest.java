@@ -65,10 +65,10 @@ public class CandidateVoteRequest {
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
-                log.info("sending vote request message, server Id: " + server.getId());
+                log.info("sending vote request message, server reactive port: " + server.getReactivePort());
                 webClient.
                         post().
-                        uri("/consensus/follower/candidateVoteRequest").
+                        uri(server.getReactivePort()+"/consensus/follower/candidateVoteRequest").
                         bodyValue(leaderVoteRequest).
                         accept(MediaType.APPLICATION_JSON).
                         exchangeToMono(response -> response.bodyToMono(LeaderVoteResponse.class)).

@@ -20,7 +20,7 @@ import java.util.UUID;
 public class WebClientConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(WebClientConfiguration.class);
-    private static final String BASE_URL = "http://localhost:61005";
+    private static final String BASE_URL = "http://localhost:";
 
     @Bean
     public WebClient webClient() {

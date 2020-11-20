@@ -41,12 +41,12 @@ public class LeaderHeartbeatRequest {
             if (!ConsensusServer.getId().equals(server.getId())) {
                 log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+heartBeatRequest.getAppendEntry().getIndex());
                 webClient.
-                        post().
-                        uri("/consensus/follower/heartbeat").
-                        bodyValue(heartBeatRequest).
-                        accept(MediaType.APPLICATION_JSON).
-                        exchangeToMono(response -> response.bodyToMono(HeartBeatResponse.class)).
-                        subscribe(onSuccess, onError, onCompletion);
+                    post().
+                    uri(server.getReactivePort()+"/consensus/follower/heartbeat").
+                    bodyValue(heartBeatRequest).
+                    accept(MediaType.APPLICATION_JSON).
+                    exchangeToMono(response -> response.bodyToMono(HeartBeatResponse.class)).
+                    subscribe(onSuccess, onError, onCompletion);
             }
         });
 
