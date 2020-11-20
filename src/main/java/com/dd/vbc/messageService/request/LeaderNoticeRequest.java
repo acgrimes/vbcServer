@@ -13,9 +13,10 @@ import java.io.Serializable;
  */
 public class LeaderNoticeRequest implements Serializable {
 
-    private final Request request;
-    private final Server server;
+    private Request request;
+    private Server server;
 
+    public LeaderNoticeRequest() {}
     public LeaderNoticeRequest(Request request, Server server) {
         this.request = request;
         this.server = server;
