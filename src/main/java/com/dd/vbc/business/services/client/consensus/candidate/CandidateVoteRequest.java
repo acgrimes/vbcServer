@@ -67,12 +67,12 @@ public class CandidateVoteRequest {
             if (!ConsensusServer.getId().equals(server.getId())) {
                 log.info("sending vote request message, server reactive port: " + server.getReactivePort());
                 webClient.
-                        post().
-                        uri(server.getReactivePort()+"/consensus/follower/candidateVoteRequest").
-                        bodyValue(leaderVoteRequest).
-                        accept(MediaType.APPLICATION_JSON).
-                        exchangeToMono(response -> response.bodyToMono(LeaderVoteResponse.class)).
-                        subscribe(onSuccess, onError, onCompletion);
+                    post().
+                    uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/candidateVoteRequest").
+                    bodyValue(leaderVoteRequest).
+                    accept(MediaType.APPLICATION_JSON).
+                    exchangeToMono(response -> response.bodyToMono(LeaderVoteResponse.class)).
+                    subscribe(onSuccess, onError, onCompletion);
             }
         });
 

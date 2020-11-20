@@ -35,7 +35,7 @@ public class WebClientConfiguration {
                                 .addHandlerLast(new WriteTimeoutHandler(2)));
 
         WebClient webclient = WebClient.builder()
-                .baseUrl(BASE_URL)
+//                .baseUrl(BASE_URL)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
                 .defaultCookie("cookieKey", "cookieValue")
                 .defaultCookie("secretToken", UUID.randomUUID().toString())
