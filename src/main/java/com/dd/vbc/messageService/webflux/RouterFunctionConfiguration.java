@@ -65,7 +65,7 @@ public class RouterFunctionConfiguration {
     public RouterFunction<ServerResponse> followerLeaderCandidate(FollowerResponseHandler followerResponseHandler) {
 
         if(log.isDebugEnabled())
-            log.debug("entering followerCommitEntry()");
+            log.debug("entering followerLeaderCandidate()");
 
         return route(RequestPredicates.POST("/consensus/follower/candidateVoteRequest").
                         and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),

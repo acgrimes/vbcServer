@@ -64,7 +64,7 @@ public class CandidateVoteRequest {
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
-                log.info("sending commit message - onApplicationEvent, server Id: " + server.getId());
+                log.info("sending vote request message, server Id: " + server.getId());
                 webClient.
                         post().
                         uri("/consensus/follower/candidateVoteRequest").
