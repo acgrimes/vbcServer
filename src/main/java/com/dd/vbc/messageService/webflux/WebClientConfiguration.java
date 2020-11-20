@@ -16,7 +16,6 @@ import reactor.netty.tcp.TcpClient;
 
 import java.util.UUID;
 
-
 @Configuration
 public class WebClientConfiguration {
 
@@ -24,7 +23,7 @@ public class WebClientConfiguration {
     private static final String BASE_URL = "http://localhost:61005";
 
     @Bean
-    public static final WebClient getWebClient() {
+    public WebClient webClient() {
 
         log.info(".webClient");
 

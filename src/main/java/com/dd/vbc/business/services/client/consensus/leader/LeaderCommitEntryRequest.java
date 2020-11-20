@@ -7,10 +7,10 @@ import com.dd.vbc.domain.ConsensusServer;
 import com.dd.vbc.domain.ConsensusState;
 import com.dd.vbc.messageService.request.ConsensusRequest;
 import com.dd.vbc.messageService.response.ConsensusResponse;
-import com.dd.vbc.messageService.webflux.WebClientConfiguration;
 import com.dd.vbc.utils.ByteArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,12 @@ import java.util.function.Consumer;
 public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntryEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(LeaderCommitEntryRequest.class);
-    private final WebClient webClient = WebClientConfiguration.getWebClient();
+
+    private WebClient webClient;
+    @Autowired
+    public void setWebClient(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     @Override
     public void onApplicationEvent(CommitEntryEvent commitEntryRequest) {

@@ -27,9 +27,14 @@ import java.util.logging.Logger;
 public class CandidateVoteRequest {
 
     private static final Logger log = Logger.getLogger(CandidateVoteRequest.class.getSimpleName());
-    private final WebClient webClient = WebClientConfiguration.getWebClient();
-    private Scheduler scheduler;
 
+    private WebClient webClient;
+    @Autowired
+    public void setWebClient(WebClient webClient) {
+        this.webClient = webClient;
+    }
+
+    private Scheduler scheduler;
     @Autowired
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;

@@ -6,13 +6,8 @@ import com.dd.vbc.business.services.server.blockchain.BlockChainService;
 import com.dd.vbc.domain.AppendEntry;
 import com.dd.vbc.domain.ConsensusServer;
 import com.dd.vbc.domain.ConsensusState;
-import com.dd.vbc.domain.Server;
 import com.dd.vbc.messageService.request.ConsensusRequest;
 import com.dd.vbc.messageService.response.ConsensusResponse;
-import com.dd.vbc.messageService.webflux.WebClientConfiguration;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +16,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.HttpProtocol;
-import reactor.netty.http.client.HttpClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +27,12 @@ import java.util.function.Consumer;
 public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(LeaderLogEntryRequest.class);
-    private final WebClient webClient = WebClientConfiguration.getWebClient();
+
+    private WebClient webClient;
+    @Autowired
+    public void setWebClient(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     private BlockChainService blockChainService;
 
