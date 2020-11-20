@@ -89,7 +89,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                 log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+consensusRequest.getAppendEntry().getIndex());
                 webClient.
                     post().
-                    uri(server.getReactivePort()+"/consensus/follower/logEntry").
+                    uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/logEntry").
                     bodyValue(consensusRequest).
                     accept(MediaType.APPLICATION_JSON).
                     exchangeToMono(response -> response.bodyToMono(ConsensusResponse.class)).

@@ -42,7 +42,7 @@ public class LeaderHeartbeatRequest {
                 log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+heartBeatRequest.getAppendEntry().getIndex());
                 webClient.
                     post().
-                    uri(server.getReactivePort()+"/consensus/follower/heartbeat").
+                    uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/heartbeat").
                     bodyValue(heartBeatRequest).
                     accept(MediaType.APPLICATION_JSON).
                     exchangeToMono(response -> response.bodyToMono(HeartBeatResponse.class)).

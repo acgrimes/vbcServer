@@ -70,7 +70,7 @@ public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntry
                 log.info("sending commit message - onApplicationEvent, server reactivePort: " + server.getReactivePort()+", index: "+consensusRequest.getAppendEntry().getIndex());
                 webClient.
                     post().
-                    uri(server.getReactivePort()+"/consensus/follower/commitEntry").
+                    uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/commitEntry").
                     bodyValue(consensusRequest).
                     accept(MediaType.APPLICATION_JSON).
                     exchangeToMono(response -> response.bodyToMono(ConsensusResponse.class)).
