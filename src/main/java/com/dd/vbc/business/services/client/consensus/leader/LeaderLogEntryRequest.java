@@ -53,8 +53,9 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
 
         Consumer<ConsensusResponse> onSuccess = (ConsensusResponse consensusResponse) ->  {
 
+            if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - onApplicationEvent onSuccess: "+consensusResponse.toString());
+
             AppendEntry entry = (AppendEntry) consensusResponse.getResponse();
-            if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - onApplicationEvent onSuccess: "+entry.toString());
             if(entry.getLogged()) {
                 if (ConsensusState.getLogEntryMap().get(entry.getIndex()) == null) {
                     List<AppendEntry> logEntryList = new ArrayList<>();
@@ -86,7 +87,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
-                log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+consensusRequest.getAppendEntry().getIndex());
+                log.info("sending logEntry message - onApplicationEvent, server Id: " + server.getId()+", index: "+consensusRequest.getAppendEntry().getIndex());
                 webClient.
                     post().
                     uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/logEntry").
