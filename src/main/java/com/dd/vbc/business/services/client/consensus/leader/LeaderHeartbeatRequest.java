@@ -39,7 +39,7 @@ public class LeaderHeartbeatRequest {
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
-                log.info("sending commit message - onApplicationEvent, server Id: " + server.getId()+", index: "+heartBeatRequest.getAppendEntry().getIndex());
+                log.info("sending heartbeat message - onApplicationEvent, server Id: " + server.getId()+", index: "+heartBeatRequest.getAppendEntry().getIndex());
                 webClient.
                     post().
                     uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/heartbeat").
