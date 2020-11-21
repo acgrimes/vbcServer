@@ -68,13 +68,14 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                 if ((double)(ConsensusState.getLogEntryMap().get(entry.getIndex()).size())>Math.floor(ConsensusState.getServerList().size()/2.0)) {
                     entry.setLog(false);
                     entry.setCommit(true);
-                    if(ConsensusState.getCurrentIndex().get()!=ConsensusState.getCommitIndex().get()) {
+                    if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
                         blockChainService.followerCommitEntryResponse(entry).subscribe();
-                        ConsensusState.setCommitIndex(new AtomicLong(ConsensusState.getCurrentIndex().get()));
+                        ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.TRUE);
                         entry.setServer(ConsensusServer.getServerInstance());
                         applicationEventPublisher.publishEvent(new CommitEntryEvent(entry));
                     }
-
+                } else {
+                    ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.FALSE);
                 }
             } else {
                 // TODO: need code to retransmit log entry command to the follower that failed to log entry.

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +22,13 @@ public class ConsensusState {
     private static AtomicLong commitIndex;
     private static List<Server> serverList;
     private static Server vbcProxyServer;
+    private static List<Boolean> leaderCommitList;
     private static Map<Long, List<Server>> indexServerMap;
     private static Map<Long, List<AppendEntry>> logEntryMap;
     private static Map<Long, List<AppendEntry>> commitEntryMap;
 
     static {
-
+        leaderCommitList = new ArrayList<Boolean>();
         logEntryMap = new HashMap<>();
         commitEntryMap = new HashMap<>();
         indexServerMap = new HashMap<>();
@@ -136,12 +138,12 @@ public class ConsensusState {
         ConsensusState.vbcProxyServer = vbcProxyServer;
     }
 
-    public static Map<Long, List<Server>> getIndexServerMap() {
-        return indexServerMap;
+    public static List<Boolean> getLeaderCommitList() {
+        return leaderCommitList;
     }
 
-    public static void setIndexServerMap(Map<Long, List<Server>> indexServerMap) {
-        ConsensusState.indexServerMap = indexServerMap;
+    public static void setLeaderCommitList(List<Boolean> leaderCommitList) {
+        ConsensusState.leaderCommitList = leaderCommitList;
     }
 
     public static Map<Long, List<AppendEntry>> getLogEntryMap() {
