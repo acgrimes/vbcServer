@@ -53,19 +53,23 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
 
         Consumer<ConsensusResponse> onSuccess = (ConsensusResponse consensusResponse) ->  {
 
-            if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - onApplicationEvent onSuccess: "+consensusResponse.toString());
-
             AppendEntry entry = (AppendEntry) consensusResponse.getResponse();
+            if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - onApplicationEvent onSuccess: "+entry.toString());
+
             if(entry.getLogged()) {
+                log.debug("entry logged");
                 if (ConsensusState.getLogEntryMap().get(entry.getIndex()) == null) {
+                    log.debug("entry logged, Map null");
                     List<AppendEntry> logEntryList = new ArrayList<>();
                     logEntryList.add(entry);
                     ConsensusState.getLogEntryMap().put(entry.getIndex(), logEntryList);
                 } else {
+                    log.debug("entry logged, Map not null");
                     ConsensusState.getLogEntryMap().get(entry.getIndex()).add(entry);
                 }
                 // If majority of followers has logged the election transaction, then notify followers to commit Tx.
                 if ((double)(ConsensusState.getLogEntryMap().get(entry.getIndex()).size())>Math.floor((double)(ConsensusState.getServerList().size())/2.0)) {
+                    log.debug("majority followers logged");
                     entry.setLog(false);
                     entry.setCommit(true);
                     if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
@@ -75,6 +79,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                         applicationEventPublisher.publishEvent(new CommitEntryEvent(entry));
                     }
                 } else {
+                    log.debug("majority followers not logged");
                     ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.FALSE);
                 }
                 log.debug("ConsensusState LeaderCommitList at "+entry.getIndex()+" is "+ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
