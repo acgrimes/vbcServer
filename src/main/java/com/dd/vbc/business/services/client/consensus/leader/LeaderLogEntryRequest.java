@@ -65,7 +65,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                     ConsensusState.getLogEntryMap().get(entry.getIndex()).add(entry);
                 }
                 // If majority of followers has logged the election transaction, then notify followers to commit Tx.
-                if ((double)(ConsensusState.getLogEntryMap().get(entry.getIndex()).size())>Math.floor(ConsensusState.getServerList().size()/2.0)) {
+                if ((double)(ConsensusState.getLogEntryMap().get(entry.getIndex()).size())>Math.floor((double)(ConsensusState.getServerList().size())/2.0)) {
                     entry.setLog(false);
                     entry.setCommit(true);
                     if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
@@ -77,7 +77,9 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                 } else {
                     ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.FALSE);
                 }
+                log.debug("ConsensusState LeaderCommitList at "+entry.getIndex()+" is "+ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
             } else {
+                log.warn("follower AppendEntry not logged!");
                 // TODO: need code to retransmit log entry command to the follower that failed to log entry.
             }
         };
