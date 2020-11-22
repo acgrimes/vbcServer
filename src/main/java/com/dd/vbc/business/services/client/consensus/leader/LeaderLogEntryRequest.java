@@ -73,7 +73,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                     entry.setLog(false);
                     entry.setCommit(true);
                     if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
-                        blockChainService.followerCommitEntryResponse(entry).subscribe();
+                        blockChainService.followerCommitEntryResponse(entry);
                         ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.TRUE);
                         entry.setServer(ConsensusServer.getServerInstance());
                         applicationEventPublisher.publishEvent(new CommitEntryEvent(entry));
