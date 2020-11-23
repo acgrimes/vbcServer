@@ -72,7 +72,7 @@ public class LeaderLogEntryRequest implements Runnable {
                 }
                 // If majority of followers has logged the election transaction, then notify followers to commit Tx.
                 if ((double)(ConsensusState.getLogEntryMap().get(entry.getIndex()).size())>Math.floor((double)(ConsensusState.getServerList().size())/2.0)) {
-                    log.debug("majority followers logged: "+entry.getIndex());
+                    log.debug("majority followers logged: "+entry.getIndex()+", "+ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
                     entry.setLog(false);
                     entry.setCommit(true);
                     if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
