@@ -22,9 +22,14 @@ import java.util.function.Consumer;
 
 
 @Component
-public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntryEvent> {
+public class LeaderCommitEntryRequest implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(LeaderCommitEntryRequest.class);
+
+    private AppendEntry appendEntry;
+    public void setAppendEntry(AppendEntry appendEntry) {
+        this.appendEntry = appendEntry;
+    }
 
     private WebClient webClient;
     @Autowired
@@ -33,7 +38,7 @@ public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntry
     }
 
     @Override
-    public void onApplicationEvent(CommitEntryEvent commitEntryRequest) {
+    public void run() {
 
         Consumer<ConsensusResponse> onSuccess = (ConsensusResponse response) ->  {
 
@@ -63,7 +68,7 @@ public class LeaderCommitEntryRequest implements ApplicationListener<CommitEntry
         Runnable onCompletion = () -> { if(log.isDebugEnabled())
                                             log.debug("LeaderCommitEntryRequest onApplicationEvent Message Completed");};
 
-        ConsensusRequest consensusRequest = new ConsensusRequest((AppendEntry) commitEntryRequest.getSource());
+        ConsensusRequest consensusRequest = new ConsensusRequest(appendEntry);
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
