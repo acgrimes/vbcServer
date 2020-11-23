@@ -1,6 +1,7 @@
 package com.dd.vbc.messageService.response;
 
 
+import com.dd.vbc.domain.AppendEntry;
 import com.dd.vbc.enums.ReturnCode;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -8,14 +9,14 @@ import org.springframework.http.HttpStatus;
 
 import java.io.Serializable;
 
-public class ConsensusResponse<Message> implements Serializable {
+public class ConsensusResponse implements Serializable {
 
     private HttpStatus httpStatus;
     private ReturnCode returnCode;
-    private Message response;
+    private AppendEntry response;
 
     public ConsensusResponse() {}
-    public ConsensusResponse(HttpStatus httpStatus, ReturnCode returnCode, Message message) {
+    public ConsensusResponse(HttpStatus httpStatus, ReturnCode returnCode, AppendEntry message) {
         this.httpStatus = httpStatus;
         this.returnCode = returnCode;
         this.response = message;
@@ -29,7 +30,7 @@ public class ConsensusResponse<Message> implements Serializable {
         return returnCode;
     }
 
-    public Message getResponse() {
+    public AppendEntry getResponse() {
         return response;
     }
 
@@ -39,7 +40,7 @@ public class ConsensusResponse<Message> implements Serializable {
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        ConsensusResponse<?> that = (ConsensusResponse<?>) o;
+        ConsensusResponse that = (ConsensusResponse) o;
 
         return new EqualsBuilder()
                 .append(httpStatus, that.httpStatus)

@@ -2,7 +2,6 @@ package com.dd.vbc.business.services.server.consensus.follower;
 
 import com.dd.vbc.business.services.server.blockchain.BlockChainService;
 import com.dd.vbc.business.services.server.consensus.ConsensusService;
-import com.dd.vbc.domain.AppendEntry;
 import com.dd.vbc.enums.ReturnCode;
 import com.dd.vbc.messageService.request.ConsensusRequest;
 import com.dd.vbc.messageService.request.HeartBeatRequest;
@@ -65,7 +64,7 @@ public class FollowerResponseHandler {
                 contentType(MediaType.APPLICATION_JSON).
                 body(BodyInserters.fromProducer(serverRequest.bodyToMono(ConsensusRequest.class).
                                 flatMap(p -> consensusService.followerLogEntryResponse(p.getAppendEntry()).
-                                flatMap(ae -> Mono.just(new ConsensusResponse<AppendEntry>(HttpStatus.OK, ReturnCode.SUCCESS, ae))).
+                                flatMap(ae -> Mono.just(new ConsensusResponse(HttpStatus.OK, ReturnCode.SUCCESS, ae))).
                                 doOnSuccess(cr -> {if(log.isDebugEnabled()) log.debug("logEntryFollowerResponse(): "+cr.toString());}).
                                 doOnError(ex -> log.error("Error: "+ex.getLocalizedMessage()))),
                                     ConsensusResponse.class)).
@@ -84,7 +83,7 @@ public class FollowerResponseHandler {
                 contentType(MediaType.APPLICATION_JSON).
                 body(BodyInserters.fromProducer(serverRequest.bodyToMono(ConsensusRequest.class).
                                 flatMap(p -> blockChainService.followerCommitEntryResponse(p.getAppendEntry()).
-                                flatMap(ae -> Mono.just(new ConsensusResponse<AppendEntry>(HttpStatus.OK, ReturnCode.SUCCESS, ae))).
+                                flatMap(ae -> Mono.just(new ConsensusResponse(HttpStatus.OK, ReturnCode.SUCCESS, ae))).
                                 doOnSuccess(cr -> {if(log.isDebugEnabled()) log.debug("commitEntryFollowerResponse(): "+cr.toString());})),
                                     ConsensusResponse.class));
     }

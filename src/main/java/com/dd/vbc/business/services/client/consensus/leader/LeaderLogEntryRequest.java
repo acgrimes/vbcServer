@@ -62,7 +62,7 @@ public class LeaderLogEntryRequest implements Runnable {
 
             if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - method run() onSuccess: "+consensusResponse.toString());
 
-            AppendEntry entry = (AppendEntry) consensusResponse.getResponse();
+            AppendEntry entry = consensusResponse.getResponse();
             if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - method run() onSuccess: "+entry.toString());
 
             if(entry.getLogged()) {
