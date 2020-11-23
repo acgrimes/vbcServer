@@ -60,14 +60,14 @@ public class LeaderLogEntryRequest implements Runnable {
             if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - method run() onSuccess: "+entry.toString());
 
             if(entry.getLogged()) {
-                log.debug("entry logged");
+                log.debug("entry logged: "+entry.getIndex());
                 if (ConsensusState.getLogEntryMap().get(entry.getIndex()) == null) {
-                    log.debug("entry logged, Map null");
+                    log.debug("entry logged, Map null: "+entry.getIndex());
                     List<AppendEntry> logEntryList = new ArrayList<>();
                     logEntryList.add(entry);
                     ConsensusState.getLogEntryMap().put(entry.getIndex(), logEntryList);
                 } else {
-                    log.debug("entry logged, Map not null");
+                    log.debug("entry logged, Map not null: "+entry.getIndex());
                     ConsensusState.getLogEntryMap().get(entry.getIndex()).add(entry);
                 }
                 // If majority of followers has logged the election transaction, then notify followers to commit Tx.
