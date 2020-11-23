@@ -1,5 +1,6 @@
 package com.dd.vbc.business.services.server.election;
 
+import com.dd.vbc.business.services.client.consensus.leader.LeaderLogEntryRequest;
 import com.dd.vbc.business.services.client.consensus.leader.events.LogEntryEvent;
 import com.dd.vbc.dao.consensus.ConsensusLogDao;
 import com.dd.vbc.domain.AppendEntry;
@@ -17,6 +18,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
@@ -24,11 +26,23 @@ public class ElectionService {
 
     private static final Logger log = LoggerFactory.getLogger(ElectionService.class);
 
-    @Autowired
     private ConsensusLogDao consensusLogDao;
-
     @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
+    public void setConsensusLogDao(ConsensusLogDao consensusLogDao) {
+        this.consensusLogDao = consensusLogDao;
+    }
+
+    private ThreadPoolExecutor executor;
+    @Autowired
+    public void setThreadPoolExecutor(ThreadPoolExecutor executor) {
+        this.executor = executor;
+    }
+
+    private LeaderLogEntryRequest leaderLogEntryRequest;
+    @Autowired
+    public void setLeaderLogEntryRequest(LeaderLogEntryRequest leaderLogEntryRequest) {
+        this.leaderLogEntryRequest = leaderLogEntryRequest;
+    }
 
     /**
      *
@@ -53,7 +67,10 @@ public class ElectionService {
             return consensusLogDao.
                 save(consensusLog).
                 flatMap(cl -> Mono.just(appendEntry)).
-                doOnNext((ap) -> applicationEventPublisher.publishEvent(new LogEntryEvent(ap))).
+                doOnNext((ap) -> {
+                    leaderLogEntryRequest.setAppendEntry(ap);
+                    executor.execute(leaderLogEntryRequest);
+                }).
                 flatMap(ap -> Mono.just(generalResponse)).
                 doOnSuccess(gr -> {
                     gr.setReturnCode(ReturnCode.SUCCESS);

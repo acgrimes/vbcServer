@@ -20,33 +20,29 @@ import java.util.function.Consumer;
 
 
 @Component
-public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent> {
+public class LeaderLogEntryRequest implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(LeaderLogEntryRequest.class);
 
-    private WebClient webClient;
+    private AppendEntry appendEntry;
+    public void setAppendEntry(AppendEntry appendEntry) {
+        this.appendEntry = appendEntry;
+    }
 
+    private WebClient webClient;
     @Autowired
     public void setWebClient(WebClient webClient) {
         this.webClient = webClient;
     }
 
     private BlockChainService blockChainService;
-
     @Autowired
     public void setBlockChainService(BlockChainService blockChainService) {
         this.blockChainService = blockChainService;
     }
 
-    private ApplicationEventPublisher applicationEventPublisher;
-
-    @Autowired
-    public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-        this.applicationEventPublisher = eventPublisher;
-    }
-
     @Override
-    public void onApplicationEvent(LogEntryEvent logEntryRequest) {
+    public void run() {
 
         Consumer<ConsensusResponse> onSuccess = (ConsensusResponse consensusResponse) ->  {
 
@@ -95,7 +91,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
         Consumer<Throwable> onError = Throwable::getMessage;
         Runnable onCompletion = () -> { if(log.isDebugEnabled()) log.debug("onApplicationEvent: Message Completed"); };
 
-        ConsensusRequest consensusRequest = new ConsensusRequest((AppendEntry) logEntryRequest.getSource());
+        ConsensusRequest consensusRequest = new ConsensusRequest(appendEntry);
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
