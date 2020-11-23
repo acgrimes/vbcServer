@@ -11,6 +11,6 @@ public class ServiceConfig {
 
     @Bean
     ThreadPoolExecutor executor() {
-        return (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        return (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     }
 }
