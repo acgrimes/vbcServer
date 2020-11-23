@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 public class LeaderLogEntryRequest implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(com.dd.vbc.business.services.client.consensus.leader.LeaderLogEntryRequest.class);
-
+    private Object mutex = new Object();
     private AppendEntry appendEntry;
     public void setAppendEntry(AppendEntry appendEntry) {
         this.appendEntry = appendEntry;
@@ -58,7 +58,7 @@ public class LeaderLogEntryRequest implements Runnable {
 
             AppendEntry entry = consensusResponse.getResponse();
             if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - method run() onSuccess: "+entry.toString());
-            synchronized (this) {
+            synchronized (mutex) {
                 if (entry.getLogged()) {
                     log.debug("entry logged: " + entry.getIndex());
                     if (ConsensusState.getLogEntryMap().get(entry.getIndex()) == null) {
@@ -77,8 +77,8 @@ public class LeaderLogEntryRequest implements Runnable {
                         entry.setCommit(true);
                         if (ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()) == Boolean.FALSE) {
                             log.debug("Majority of followers has Logged Entry, Commit entry in blockChainService: " + entry.getIndex());
-                            blockChainServiceEvent.setAppendEntry(entry);
-                            executor.execute(blockChainServiceEvent);
+//                            blockChainServiceEvent.setAppendEntry(entry);
+//                            executor.execute(blockChainServiceEvent);
                         }
                     } else {
                         log.debug("majority followers not logged: " + entry.getIndex());
