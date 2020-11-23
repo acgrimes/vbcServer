@@ -73,16 +73,17 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                     entry.setLog(false);
                     entry.setCommit(true);
                     if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
-                        Consumer<AppendEntry> oSuccess = (AppendEntry appendEntry) -> {
-                            ConsensusState.getLeaderCommitList().set(appendEntry.getIndex().intValue(), Boolean.TRUE);
-                            appendEntry.setServer(ConsensusServer.getServerInstance());
-                            applicationEventPublisher.publishEvent(new CommitEntryEvent(appendEntry));
-                        };
-                        Consumer<Throwable> oError = Throwable::getMessage;
-                        Runnable oCompletion = () -> { if(log.isDebugEnabled()) log.debug("onApplicationEvent: Message Completed"); };
-
-                        blockChainService.followerCommitEntryResponse(entry).
-                            subscribe(oSuccess, oError, oCompletion);
+                        log.debug("Majority of followers has Logged Entry");
+//                        Consumer<AppendEntry> oSuccess = (AppendEntry appendEntry) -> {
+//                            ConsensusState.getLeaderCommitList().set(appendEntry.getIndex().intValue(), Boolean.TRUE);
+//                            appendEntry.setServer(ConsensusServer.getServerInstance());
+//                            applicationEventPublisher.publishEvent(new CommitEntryEvent(appendEntry));
+//                        };
+//                        Consumer<Throwable> oError = Throwable::getMessage;
+//                        Runnable oCompletion = () -> { if(log.isDebugEnabled()) log.debug("onApplicationEvent: Message Completed"); };
+//
+//                        blockChainService.followerCommitEntryResponse(entry).
+//                            subscribe(oSuccess, oError, oCompletion);
                     }
                 } else {
                     log.debug("majority followers not logged");
