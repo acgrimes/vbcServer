@@ -109,6 +109,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
                     bodyValue(consensusRequest).
                     accept(MediaType.APPLICATION_JSON).
                     exchangeToMono(response -> response.bodyToMono(ConsensusResponse.class)).
+                    log("Received logEntry ConsensusResponse from follower").
                     subscribe(onSuccess, onError, onCompletion);
             }
         });
