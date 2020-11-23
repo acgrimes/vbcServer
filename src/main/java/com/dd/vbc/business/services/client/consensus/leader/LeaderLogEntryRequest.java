@@ -1,6 +1,5 @@
 package com.dd.vbc.business.services.client.consensus.leader;
 
-import com.dd.vbc.business.services.client.consensus.leader.events.CommitEntryEvent;
 import com.dd.vbc.business.services.client.consensus.leader.events.LogEntryEvent;
 import com.dd.vbc.business.services.server.blockchain.BlockChainService;
 import com.dd.vbc.domain.AppendEntry;
@@ -13,15 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 
@@ -30,12 +24,12 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
 
     private static final Logger log = LoggerFactory.getLogger(LeaderLogEntryRequest.class);
 
-//    private WebClient webClient;
-//
-//    @Autowired
-//    public void setWebClient(WebClient webClient) {
-//        this.webClient = webClient;
-//    }
+    private WebClient webClient;
+
+    @Autowired
+    public void setWebClient(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     private BlockChainService blockChainService;
 
@@ -106,15 +100,12 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
                 log.info("sending logEntry message - onApplicationEvent, server reactive port: " + server.getReactivePort()+", index: "+consensusRequest.getAppendEntry().getIndex());
-//                webClient.
-                WebClient webClient = WebClient.builder().build();
                 webClient.
                     post().
                     uri("http://localhost:"+server.getReactivePort()+"/consensus/follower/logEntry").
                     bodyValue(consensusRequest).
                     accept(MediaType.APPLICATION_JSON).
                     exchangeToMono(response -> response.bodyToMono(ConsensusResponse.class)).
-                    log("Received logEntry ConsensusResponse from follower").
                     subscribe(onSuccess, onError, onCompletion);
             }
         });
