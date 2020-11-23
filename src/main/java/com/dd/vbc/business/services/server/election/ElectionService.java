@@ -1,6 +1,5 @@
 package com.dd.vbc.business.services.server.election;
 
-import com.dd.vbc.business.services.client.consensus.leader.LeaderLogEntryRequest;
 import com.dd.vbc.business.services.client.consensus.leader.events.LogEntryEvent;
 import com.dd.vbc.dao.consensus.ConsensusLogDao;
 import com.dd.vbc.domain.AppendEntry;
@@ -18,7 +17,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
@@ -26,23 +24,12 @@ public class ElectionService {
 
     private static final Logger log = LoggerFactory.getLogger(ElectionService.class);
 
+    @Autowired
     private ConsensusLogDao consensusLogDao;
-    @Autowired
-    public void setConsensusLogDao(ConsensusLogDao consensusLogDao) {
-        this.consensusLogDao = consensusLogDao;
-    }
 
-    private ThreadPoolExecutor executor;
     @Autowired
-    public void setThreadPoolExecutor(ThreadPoolExecutor executor) {
-        this.executor = executor;
-    }
+    private ApplicationEventPublisher applicationEventPublisher;
 
-    private LeaderLogEntryRequest leaderLogEntryRequest;
-    @Autowired
-    public void setLeaderLogEntryRequest(LeaderLogEntryRequest leaderLogEntryRequest) {
-        this.leaderLogEntryRequest = leaderLogEntryRequest;
-    }
     /**
      *
      * @param electionRequest
@@ -66,10 +53,7 @@ public class ElectionService {
             return consensusLogDao.
                 save(consensusLog).
                 flatMap(cl -> Mono.just(appendEntry)).
-                    doOnNext((ap) -> {
-                        leaderLogEntryRequest.setAppendEntry(ap);
-                        executor.execute(leaderLogEntryRequest);
-                    }).
+                doOnNext((ap) -> applicationEventPublisher.publishEvent(new LogEntryEvent(ap))).
                 flatMap(ap -> Mono.just(generalResponse)).
                 doOnSuccess(gr -> {
                     gr.setReturnCode(ReturnCode.SUCCESS);
