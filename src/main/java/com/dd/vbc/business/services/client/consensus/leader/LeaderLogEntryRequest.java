@@ -1,6 +1,6 @@
 package com.dd.vbc.business.services.client.consensus.leader;
 
-import com.dd.vbc.business.services.server.blockchain.BlockChainService;
+import com.dd.vbc.business.services.server.blockchain.BlockChainServiceEvent;
 import com.dd.vbc.domain.AppendEntry;
 import com.dd.vbc.domain.ConsensusServer;
 import com.dd.vbc.domain.ConsensusState;
@@ -35,16 +35,10 @@ public class LeaderLogEntryRequest implements Runnable {
         this.webClient = webClient;
     }
 
-    private BlockChainService blockChainService;
+    private BlockChainServiceEvent blockChainServiceEvent;
     @Autowired
-    public void setBlockChainService(BlockChainService blockChainService) {
-        this.blockChainService = blockChainService;
-    }
-
-    private LeaderCommitEntryRequest leaderCommitEntryRequest;
-    @Autowired
-    public void setLeaderCommitEntryRequest(LeaderCommitEntryRequest leaderCommitEntryRequest) {
-        this.leaderCommitEntryRequest = leaderCommitEntryRequest;
+    public void setBlockChainServiceEvent(BlockChainServiceEvent blockChainServiceEvent) {
+        this.blockChainServiceEvent = blockChainServiceEvent;
     }
 
     private ThreadPoolExecutor executor;
@@ -83,17 +77,8 @@ public class LeaderLogEntryRequest implements Runnable {
                     entry.setCommit(true);
                     if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
                         log.debug("Majority of followers has Logged Entry, Commit entry in blockChainService: "+entry.getIndex());
-                        Consumer<AppendEntry> oSuccess = (AppendEntry appendEntry) -> {
-                            ConsensusState.getLeaderCommitList().set(appendEntry.getIndex().intValue(), Boolean.TRUE);
-                            appendEntry.setServer(ConsensusServer.getServerInstance());
-                            leaderCommitEntryRequest.setAppendEntry(entry);
-                            executor.execute(leaderCommitEntryRequest);
-                        };
-                        Consumer<Throwable> oError = Throwable::getMessage;
-                        Runnable oCompletion = () -> { if(log.isDebugEnabled()) log.debug("onApplicationEvent: Message Completed"); };
-
-                        blockChainService.followerCommitEntryResponse(entry).
-                            subscribe(oSuccess, oError, oCompletion);
+                        blockChainServiceEvent.setAppendEntry(entry);
+                        executor.execute(blockChainServiceEvent);
                     }
                 } else {
                     log.debug("majority followers not logged: "+entry.getIndex());
