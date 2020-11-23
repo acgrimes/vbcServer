@@ -48,7 +48,7 @@ public class FollowerResponseHandler {
                 body(BodyInserters.fromProducer(serverRequest.bodyToMono(HeartBeatRequest.class).
                                 flatMap(hr -> consensusService.followerHeartbeatResponse(hr.getAppendEntry())).
                                 flatMap(ae -> Mono.just(new HeartBeatResponse(ae))).
-                                doOnSuccess(ae -> { if(log.isDebugEnabled()) log.debug("heartbeatFollowerResponse: "+ae.toString());}),
+                                doOnSuccess(ae -> { if(log.isDebugEnabled()) log.debug("heartbeatFollowerResponse(): "+ae.toString());}),
                                                         HeartBeatResponse.class)).
                                 doOnError(em -> log.error("Error: "+em.getLocalizedMessage()));
     }
@@ -66,8 +66,10 @@ public class FollowerResponseHandler {
                 body(BodyInserters.fromProducer(serverRequest.bodyToMono(ConsensusRequest.class).
                                 flatMap(p -> consensusService.followerLogEntryResponse(p.getAppendEntry()).
                                 flatMap(ae -> Mono.just(new ConsensusResponse<AppendEntry>(HttpStatus.OK, ReturnCode.SUCCESS, ae))).
-                                doOnSuccess(cr -> {if(log.isDebugEnabled()) log.debug("logEntryFollowerResponse(): "+cr.toString());})),
-                                    ConsensusResponse.class));
+                                doOnSuccess(cr -> {if(log.isDebugEnabled()) log.debug("logEntryFollowerResponse(): "+cr.toString());}).
+                                doOnError(ex -> log.error("Error: "+ex.getLocalizedMessage()))),
+                                    ConsensusResponse.class)).
+                                doOnError(em -> log.error("Error: "+em.getLocalizedMessage()));
     }
 
     /**

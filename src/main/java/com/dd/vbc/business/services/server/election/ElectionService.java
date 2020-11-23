@@ -10,6 +10,8 @@ import com.dd.vbc.enums.Response;
 import com.dd.vbc.enums.ReturnCode;
 import com.dd.vbc.messageService.request.ElectionRequest;
 import com.dd.vbc.messageService.response.GeneralResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class ElectionService {
+
+    private static final Logger log = LoggerFactory.getLogger(ElectionService.class);
 
     @Autowired
     private ConsensusLogDao consensusLogDao;
@@ -54,6 +58,7 @@ public class ElectionService {
                 doOnSuccess(gr -> {
                     gr.setReturnCode(ReturnCode.SUCCESS);
                     gr.setResponse(Response.BallotAccepted);
+                    if(log.isDebugEnabled()) log.debug("electionTransactionResponse(): "+gr.toString());
                 }).
                 doOnError(ex -> new Throwable("Election Request Failed"));
         } else {

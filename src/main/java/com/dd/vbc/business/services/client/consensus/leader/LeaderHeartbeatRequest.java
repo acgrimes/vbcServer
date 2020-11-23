@@ -31,11 +31,11 @@ public class LeaderHeartbeatRequest {
     public void heartbeatRequest(HeartBeatRequest heartBeatRequest) {
 
         Consumer<HeartBeatResponse> onSuccess = (HeartBeatResponse response) -> {
-            log.debug("heartbeat response follower in onSuccess: "+response.toString());
+            log.debug("heartbeat response from follower in onSuccess: "+response.toString());
         };
         Consumer<Throwable> onError = Throwable::getMessage;
 
-        Runnable onCompletion = () -> log.debug("heartbeat message response from follower complete");
+        Runnable onCompletion = () -> log.debug("heartbeat message response from follower onCompletion");
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
