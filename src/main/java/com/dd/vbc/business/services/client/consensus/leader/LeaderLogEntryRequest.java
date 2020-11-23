@@ -43,8 +43,9 @@ public class LeaderLogEntryRequest implements Runnable {
 
         Consumer<ConsensusResponse> onSuccess = (ConsensusResponse consensusResponse) ->  {
 
+            if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - onApplicationEvent onSuccess: "+consensusResponse.toString());
+
             AppendEntry entry = (AppendEntry) consensusResponse.getResponse();
-            if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - onApplicationEvent onSuccess: "+entry.toString());
 
 //            if(entry.getLogged()) {
 //                log.debug("entry logged");
