@@ -1,6 +1,5 @@
 package com.dd.vbc.business.services.client.consensus.leader;
 
-import com.dd.vbc.business.services.client.consensus.leader.events.LogEntryEvent;
 import com.dd.vbc.business.services.server.blockchain.BlockChainService;
 import com.dd.vbc.domain.AppendEntry;
 import com.dd.vbc.domain.ConsensusServer;
@@ -10,8 +9,6 @@ import com.dd.vbc.messageService.response.ConsensusResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationListener;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,33 +17,29 @@ import java.util.function.Consumer;
 
 
 @Component
-public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent> {
+public class LeaderLogEntryRequest implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(LeaderLogEntryRequest.class);
+    private static final Logger log = LoggerFactory.getLogger(com.dd.vbc.business.services.client.consensus.leader.LeaderLogEntryRequest.class);
+
+    private AppendEntry appendEntry;
+    public void setAppendEntry(AppendEntry appendEntry) {
+        this.appendEntry = appendEntry;
+    }
 
     private WebClient webClient;
-
     @Autowired
     public void setWebClient(WebClient webClient) {
         this.webClient = webClient;
     }
 
     private BlockChainService blockChainService;
-
     @Autowired
     public void setBlockChainService(BlockChainService blockChainService) {
         this.blockChainService = blockChainService;
     }
 
-    private ApplicationEventPublisher applicationEventPublisher;
-
-    @Autowired
-    public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-        this.applicationEventPublisher = eventPublisher;
-    }
-
     @Override
-    public void onApplicationEvent(LogEntryEvent logEntryRequest) {
+    public void run() {
 
         Consumer<ConsensusResponse> onSuccess = (ConsensusResponse consensusResponse) ->  {
 
@@ -95,7 +88,7 @@ public class LeaderLogEntryRequest implements ApplicationListener<LogEntryEvent>
         Consumer<Throwable> onError = Throwable::getMessage;
         Runnable onCompletion = () -> { if(log.isDebugEnabled()) log.debug("onApplicationEvent: Message Completed"); };
 
-        ConsensusRequest consensusRequest = new ConsensusRequest((AppendEntry) logEntryRequest.getSource());
+        ConsensusRequest consensusRequest = new ConsensusRequest(appendEntry);
 
         ConsensusState.getServerList().stream().forEach(server -> {
             if (!ConsensusServer.getId().equals(server.getId())) {
