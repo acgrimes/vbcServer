@@ -58,36 +58,37 @@ public class LeaderLogEntryRequest implements Runnable {
 
             AppendEntry entry = consensusResponse.getResponse();
             if(log.isDebugEnabled()) log.debug("LogEntry Message Received from Follower - method run() onSuccess: "+entry.toString());
-
-            if(entry.getLogged()) {
-                log.debug("entry logged: "+entry.getIndex());
-                if (ConsensusState.getLogEntryMap().get(entry.getIndex()) == null) {
-                    log.debug("entry logged, Map null: "+entry.getIndex());
-                    List<AppendEntry> logEntryList = new ArrayList<>();
-                    logEntryList.add(entry);
-                    ConsensusState.getLogEntryMap().put(entry.getIndex(), logEntryList);
-                } else {
-                    log.debug("entry logged, Map not null: "+entry.getIndex());
-                    ConsensusState.getLogEntryMap().get(entry.getIndex()).add(entry);
-                }
-                // If majority of followers has logged the election transaction, then notify followers to commit Tx.
-                if ((double)(ConsensusState.getLogEntryMap().get(entry.getIndex()).size())>Math.floor((double)(ConsensusState.getServerList().size())/2.0)) {
-                    log.debug("majority followers logged: "+entry.getIndex()+", "+ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
-                    entry.setLog(false);
-                    entry.setCommit(true);
-                    if(ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue())==Boolean.FALSE) {
-                        log.debug("Majority of followers has Logged Entry, Commit entry in blockChainService: "+entry.getIndex());
-                        blockChainServiceEvent.setAppendEntry(entry);
-                        executor.execute(blockChainServiceEvent);
+            synchronized (this) {
+                if (entry.getLogged()) {
+                    log.debug("entry logged: " + entry.getIndex());
+                    if (ConsensusState.getLogEntryMap().get(entry.getIndex()) == null) {
+                        log.debug("entry logged, Map null: " + entry.getIndex());
+                        List<AppendEntry> logEntryList = new ArrayList<>();
+                        logEntryList.add(entry);
+                        ConsensusState.getLogEntryMap().put(entry.getIndex(), logEntryList);
+                    } else {
+                        log.debug("entry logged, Map not null: " + entry.getIndex());
+                        ConsensusState.getLogEntryMap().get(entry.getIndex()).add(entry);
                     }
+                    // If majority of followers has logged the election transaction, then notify followers to commit Tx.
+                    if ((double) (ConsensusState.getLogEntryMap().get(entry.getIndex()).size()) > Math.floor((double) (ConsensusState.getServerList().size()) / 2.0)) {
+                        log.debug("majority followers logged: " + entry.getIndex() + ", " + ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
+                        entry.setLog(false);
+                        entry.setCommit(true);
+                        if (ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()) == Boolean.FALSE) {
+                            log.debug("Majority of followers has Logged Entry, Commit entry in blockChainService: " + entry.getIndex());
+                            blockChainServiceEvent.setAppendEntry(entry);
+                            executor.execute(blockChainServiceEvent);
+                        }
+                    } else {
+                        log.debug("majority followers not logged: " + entry.getIndex());
+                        ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.FALSE);
+                    }
+                    log.debug("ConsensusState LeaderCommitList at " + entry.getIndex() + " is " + ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
                 } else {
-                    log.debug("majority followers not logged: "+entry.getIndex());
-                    ConsensusState.getLeaderCommitList().set(entry.getIndex().intValue(), Boolean.FALSE);
+                    log.warn("follower AppendEntry not logged!: " + entry.getIndex());
+                    // TODO: need code to retransmit log entry command to the follower that failed to log entry.
                 }
-                log.debug("ConsensusState LeaderCommitList at "+entry.getIndex()+" is "+ConsensusState.getLeaderCommitList().get(entry.getIndex().intValue()));
-            } else {
-                log.warn("follower AppendEntry not logged!: "+entry.getIndex());
-                // TODO: need code to retransmit log entry command to the follower that failed to log entry.
             }
         };
         Consumer<Throwable> onError = Throwable::getMessage;
